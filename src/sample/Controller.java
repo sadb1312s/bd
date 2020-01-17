@@ -2,12 +2,12 @@ package sample;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.Pane;
+import javafx.util.Callback;
 import sample.Data.Data3;
 
 import java.sql.SQLException;
@@ -48,7 +48,7 @@ public class Controller {
     myDBworker dBWorker;
 
     public void initialize() {
-        myDBworker dBWorker = new myDBworker();
+        dBWorker = new myDBworker();
 
 
         connectButton.setOnAction(actionEvent -> {
@@ -111,120 +111,95 @@ public class Controller {
         System.out.println("размер таблицы = "+size);
 
 
-        //column add
+
         ObservableList<Data3> tData = FXCollections.observableArrayList();
-        //data add to column
+        //добавление данных в таблицу
         for(int i = 1; i < data.size(); i++){
             ArrayList<String> o = data.get(i);
-
             Data3 t = new Data3(o);
             tData.add(t);
         }
 
 
-
+        //column add
         TableView<Data3> tableView = new TableView<>(tData);
         tableView.setEditable(true);
         tableView.setPrefWidth(600);
-        for(int i = 0; i < size + 2; i++){
+        for(int i = 1; i < size + 2; i++){
+            TableColumn<Data3, String> dataColumn;
+            //данные
             if(i < size) {
-                TableColumn<Data3, Label> data1Column = new TableColumn<Data3, Label>(data.get(0).get(i));
-                data1Column.setCellValueFactory(new PropertyValueFactory<Data3, Label>("data" + (i + 1)));
-                tableView.getColumns().add(data1Column);
+                dataColumn = new TableColumn<Data3, String>(data.get(0).get(i));
+                dataColumn.setCellValueFactory(new PropertyValueFactory<Data3, String>("data" + (i + 1)));
+                dataColumn.setCellFactory(TextFieldTableCell.forTableColumn());
+
+                dataColumn.setOnEditCommit(dataStringCellEditEvent -> {
+
+                });
+
+                tableView.getColumns().add(dataColumn);
+
             }
-            //
+            //служебные столбцы редактировать и удалить
             if(i == size){
-                //System.out.println("1");
-                TableColumn<Data3, Label> data1Column = new TableColumn<Data3, Label>();
-                data1Column.setCellValueFactory(new PropertyValueFactory<Data3, Label>("dataE"));
-                tableView.getColumns().add(data1Column);
+                dataColumn = new TableColumn<Data3, String>();
+                //dataColumn.setCellValueFactory(new PropertyValueFactory<Data3, String>("dataE"));
+                dataColumn.setCellFactory(getButton("изменить",1,1));
+                tableView.getColumns().add(dataColumn);
             }
             if(i == size + 1){
-                //System.out.println("2");
-                TableColumn<Data3, Label> data1Column = new TableColumn<Data3, Label>();
-                data1Column.setCellValueFactory(new PropertyValueFactory<Data3, Label>("dataD"));
-                tableView.getColumns().add(data1Column);
+                dataColumn = new TableColumn<Data3, String>();
+                //dataColumn.setCellValueFactory(new PropertyValueFactory<Data3, String>("dataD"));
+                dataColumn.setCellFactory(getButton("удалить",2,2));
+                tableView.getColumns().add(dataColumn);
             }
         }
 
 
         tablePane.getChildren().addAll(tableView);
 
-        /*int size = data.get(0).size();
-        System.out.println("размер таблицы = "+size);
-        GridPane grid = new GridPane();
-        grid.setMaxWidth(600);
-        for(int i = 0; i < data.size() + 2; i++){
-            grid.getColumnConstraints().add(new ColumnConstraints());
-        }
+    }
 
-        int i = 0;
-        for(String o : data.get(0)){
-            if(data.get(0).indexOf(o) != 0) {
-                String n = o;
+    //засунуть кнопку в ячейку таблицы, не пытаться понять как это работает
+    public Callback<TableColumn<Data3, String>, TableCell<Data3, String>> getButton(String name,int id,int type){ //type = 1 едит, 2 удалить
+        Callback<TableColumn<Data3, String>, TableCell<Data3, String>> cellFactory
+                = //
+                new Callback<TableColumn<Data3, String>, TableCell<Data3, String>>() {
+                    @Override
+                    public TableCell call(final TableColumn<Data3, String> param) {
+                        final TableCell<Data3, String> cell = new TableCell<Data3, String>() {
 
+                            final Button btn = new Button(name);
 
-                if(n.contains("id_type")){
-                    n = "тип";
-                }
+                            @Override
+                            public void updateItem(String item, boolean empty) {
+                                super.updateItem(item, empty);
+                                if (empty) {
+                                    setGraphic(null);
+                                    setText(null);
+                                } else {
+                                    btn.setOnAction(event -> {
+                                        Data3 cellData3 = getTableView().getItems().get(getIndex());
+                                        System.out.println("нажали кнопку id : "+cellData3.id);
+                                        if(type == 1){
+                                            System.out.println("нужно отредактировать");
+                                        }
+                                        if(type == 2){
+                                            System.out.println("нужно удалить "+cellData3.id);
+                                            System.out.println(dBWorker);
+                                            dBWorker.SQLRequest("delete from goodstype where id = "+cellData3.id+";");
+                                        }
 
-                if(n.contains("id_producer")){
-                    n = "производитель";
-                }
-
-                TextField t = new TextField(n);
-                t.setEditable(false);
-
-                grid.setColumnIndex(t, i);
-                grid.getChildren().addAll(t);
-                i++;
-            }
-
-        }
-
-        data.remove(data.get(0));
-        int j = 1;//строка
-        for(ArrayList<String> o : data){
-            grid.getRowConstraints().add(new RowConstraints());
-            int k = 0;//столбец
-            for(int p = 1; p < o.size(); p++){
-                TextField t = new TextField(o.get(p));
-                grid.add(t, k, j);
-                k++;
-            }
-            j++;
-            //System.out.println();
-        }
-
-
-        grid.setVisible(true);
-        tablePane.getChildren().addAll(grid);*/
-
-        //good
-        /*ObservableList<Data> tData = FXCollections.observableArrayList();
-        tData.add((new Data("1","2","3")));
-
-        TableView<Data> tableView = new TableView<>(tData);
-        tableView.setEditable(true);
-
-        *//*TableColumn<Data,Label> data1Column = new TableColumn<Data,Label>("hello world");
-        data1Column.setCellValueFactory(new PropertyValueFactory<Data,Label>("data1"));
-        tableView.getColumns().add(data1Column);
-
-        TableColumn<Data,String> data2Column = new TableColumn<Data,String>("dsadsa");
-        data2Column.setCellValueFactory(new PropertyValueFactory<Data,String>("data2"));
-        tableView.getColumns().add(data2Column);*//*
-
-        TableColumn<Data,String> data1Column = new TableColumn<Data,String>("hello world");
-        data1Column.setCellValueFactory(new PropertyValueFactory<Data,String>("data1"));
-        data1Column.setCellFactory(TextFieldTableCell.forTableColumn());
-        *//*data1Column.setOnEditCommit(dataStringCellEditEvent -> {
-
-        });*//*
-
-        tableView.getColumns().add(data1Column);
-
-        tablePane.getChildren().addAll(tableView);*/
+                                    });
+                                    setGraphic(btn);
+                                    setText(null);
+                                }
+                            }
+                        };
+                        return cell;
+                    }
+                };
+        return cellFactory;
     }
 
 }

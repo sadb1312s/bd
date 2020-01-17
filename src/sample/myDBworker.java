@@ -36,7 +36,7 @@ public class myDBworker {
             System.out.println("посылаем запрос таблицы :" +tableName);
             rs = stmt.executeQuery("select * from "+tableName+" where id = 1;");
 
-            //size
+            //определяем размер таблицы
             int size = 0;
             while (rs.next()) {
                 int i = 1;
@@ -56,7 +56,6 @@ public class myDBworker {
 
             System.out.println("размер таблицы = "+size);
 
-
             //названия столбцов
             data.add(new ArrayList<>());
             rs = stmt.executeQuery("desc "+tableName+";");
@@ -65,8 +64,6 @@ public class myDBworker {
                 data.get(0).add(rs.getString(1));
             }
             //System.out.println();
-
-
 
             //данные
             rs = stmt.executeQuery("select * from "+tableName);
@@ -80,12 +77,12 @@ public class myDBworker {
             }
 
 
-            for(ArrayList<String> e : data) {
+            /*for(ArrayList<String> e : data) {
                 for (String s : e)
                     System.out.print(s + " ");
                 System.out.println();
             }
-            System.out.println("----");
+            System.out.println("----");*/
 
            
 
@@ -95,5 +92,12 @@ public class myDBworker {
         
         return data;
     }
-
+    public void SQLRequest(String request){
+        System.out.println("Запрос : "+request);
+        try {
+            stmt.executeUpdate(request);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
 }

@@ -7,6 +7,7 @@ import java.util.ArrayList;
 
 //данные на 3 столбца
 public class Data3{
+    public String id;
     private String data1;
     private String data2;
     private String data3;
@@ -21,12 +22,15 @@ public class Data3{
         this.data1 = data1;
         this.data2 = data2;
         this.data3 = data3;
+
+        id = data1;
     }
     public Data3(ArrayList<String> o){
         data1 = o.get(0);
         data2 = o.get(1);
         data3 = o.get(2);
 
+        id = data1;
         //System.out.println(data1+" "+data2+" "+data3);
     }
 
