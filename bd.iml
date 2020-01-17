@@ -20,5 +20,6 @@
         <jarDirectory url="file://F:/libs/javafx-sdk-12.0.2/lib" recursive="false" type="SOURCES" />
       </library>
     </orderEntry>
+    <orderEntry type="library" name="mysql-connector-java-8.0.19" level="project" />
   </component>
 </module>

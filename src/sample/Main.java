@@ -12,21 +12,17 @@ import java.sql.SQLException;
 
 public class Main extends Application {
 
+
     @Override
     public void start(Stage primaryStage) throws Exception{
         Parent root = FXMLLoader.load(getClass().getResource("sample.fxml"));
-        primaryStage.setTitle("Hello World");
-        primaryStage.setScene(new Scene(root, 300, 275));
+        primaryStage.setTitle("мой простой интерфейс бд");
+        primaryStage.setScene(new Scene(root));
         primaryStage.show();
     }
 
 
     public static void main(String[] args) {
-        try {
-            Connection mySql = DriverManager.getConnection("localhost:3306", "root", "123456");
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
         launch(args);
     }
 }
