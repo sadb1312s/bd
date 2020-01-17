@@ -1,14 +1,14 @@
 package sample;
 
-import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.layout.ColumnConstraints;
-import javafx.scene.layout.GridPane;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.RowConstraints;
+import sample.Data.Data3;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -109,6 +109,49 @@ public class Controller {
 
         int size = data.get(0).size();
         System.out.println("размер таблицы = "+size);
+
+
+        //column add
+        ObservableList<Data3> tData = FXCollections.observableArrayList();
+        //data add to column
+        for(int i = 1; i < data.size(); i++){
+            ArrayList<String> o = data.get(i);
+
+            Data3 t = new Data3(o);
+            tData.add(t);
+        }
+
+
+
+        TableView<Data3> tableView = new TableView<>(tData);
+        tableView.setEditable(true);
+        tableView.setPrefWidth(600);
+        for(int i = 0; i < size + 2; i++){
+            if(i < size) {
+                TableColumn<Data3, Label> data1Column = new TableColumn<Data3, Label>(data.get(0).get(i));
+                data1Column.setCellValueFactory(new PropertyValueFactory<Data3, Label>("data" + (i + 1)));
+                tableView.getColumns().add(data1Column);
+            }
+            //
+            if(i == size){
+                //System.out.println("1");
+                TableColumn<Data3, Label> data1Column = new TableColumn<Data3, Label>();
+                data1Column.setCellValueFactory(new PropertyValueFactory<Data3, Label>("dataE"));
+                tableView.getColumns().add(data1Column);
+            }
+            if(i == size + 1){
+                //System.out.println("2");
+                TableColumn<Data3, Label> data1Column = new TableColumn<Data3, Label>();
+                data1Column.setCellValueFactory(new PropertyValueFactory<Data3, Label>("dataD"));
+                tableView.getColumns().add(data1Column);
+            }
+        }
+
+
+        tablePane.getChildren().addAll(tableView);
+
+        /*int size = data.get(0).size();
+        System.out.println("размер таблицы = "+size);
         GridPane grid = new GridPane();
         grid.setMaxWidth(600);
         for(int i = 0; i < data.size() + 2; i++){
@@ -155,10 +198,36 @@ public class Controller {
 
 
         grid.setVisible(true);
-        tablePane.getChildren().addAll(grid);
+        tablePane.getChildren().addAll(grid);*/
 
+        //good
+        /*ObservableList<Data> tData = FXCollections.observableArrayList();
+        tData.add((new Data("1","2","3")));
 
+        TableView<Data> tableView = new TableView<>(tData);
+        tableView.setEditable(true);
+
+        *//*TableColumn<Data,Label> data1Column = new TableColumn<Data,Label>("hello world");
+        data1Column.setCellValueFactory(new PropertyValueFactory<Data,Label>("data1"));
+        tableView.getColumns().add(data1Column);
+
+        TableColumn<Data,String> data2Column = new TableColumn<Data,String>("dsadsa");
+        data2Column.setCellValueFactory(new PropertyValueFactory<Data,String>("data2"));
+        tableView.getColumns().add(data2Column);*//*
+
+        TableColumn<Data,String> data1Column = new TableColumn<Data,String>("hello world");
+        data1Column.setCellValueFactory(new PropertyValueFactory<Data,String>("data1"));
+        data1Column.setCellFactory(TextFieldTableCell.forTableColumn());
+        *//*data1Column.setOnEditCommit(dataStringCellEditEvent -> {
+
+        });*//*
+
+        tableView.getColumns().add(data1Column);
+
+        tablePane.getChildren().addAll(tableView);*/
     }
 
 }
+
+
 
