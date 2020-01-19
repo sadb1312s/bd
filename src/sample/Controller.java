@@ -17,6 +17,7 @@ import javafx.util.Callback;
 import sample.Data.*;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 
 public class Controller {
@@ -66,6 +67,8 @@ public class Controller {
 
 
     public static String currentTable;
+    public static ArrayList<Help> helpData1;
+    public static ArrayList<Help> helpData2;
     myDBworker dBWorker;
 
     public void initialize() {
@@ -128,9 +131,48 @@ public class Controller {
 
     }
 
+    //for table goods
+    public RawData[] helpRequest(){
+        RawData data1help = dBWorker.sendSQLselectAllRequest(goodsTypesHelp);
+        RawData data2Help = dBWorker.sendSQLselectAllRequest(goodsProducerHelp);
+
+        RawData data[] = {data1help,data2Help};
+
+        return data;
+    }
+
     public void tableRequest(){
+        if(currentTable.equals("goods")) {
+            RawData helpData[] = helpRequest();
+            for (RawData o : helpData)
+                o.print();
+
+            setHelpData(helpData);
+            System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!");
+        }
         RawData  data = dBWorker.sendSQLselectAllRequest(Data.request);
         addGrid(data);
+    }
+
+    public void setHelpData(RawData data[]){
+        helpData1 = new ArrayList<>();
+        helpData2 = new ArrayList<>();
+        System.out.println("формируем вспомогательные данные");
+
+        for(int i = 0; i < data[0].rows.size(); i++){
+            String id = data[0].getRow(i).get(0);
+            String name = data[0].getRow(i).get(1);
+            System.out.println(id+" "+name);
+            helpData1.add(new Help(id,name));
+        }
+
+        System.out.println();
+        for(int i = 0; i < data[1].rows.size(); i++){
+            String id = data[1].getRow(i).get(0);
+            String name = data[1].getRow(i).get(1);
+            System.out.println(id+" "+name);
+            helpData2.add(new Help(id,name));
+        }
     }
 
     public void currentUpdate(){
@@ -178,7 +220,7 @@ public class Controller {
         for(String o : data.columnsName){
             TableColumn col = null;
             String nameOfRussian = dataWorker.perevod(o);
-            if(!o.contains("id_")) {
+            if(!o.contains("goods_type")||!currentTable.equals("goods")) {
                 //for data
 
                 col = new TableColumn(nameOfRussian);
@@ -186,32 +228,82 @@ public class Controller {
                 col.setCellFactory(TextFieldTableCell.forTableColumn());
                 col.setId(o);
             }
-            else {
-                ObservableList<Gender> genderList = FXCollections.observableArrayList(//
-                        Gender.values());
+            //сложные запросы
+            if(o.contains("goods_type")&&currentTable.equals("goods")){
 
                 col = new TableColumn(nameOfRussian);
-                col.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<Data, Gender>, ObservableValue<Gender>>() {
+                col.setCellValueFactory(new PropertyValueFactory<Data, String>(o));
+                col.setCellFactory(TextFieldTableCell.forTableColumn());
+                col.setId(o);
 
-                    @Override
-                    public ObservableValue<Gender> call(TableColumn.CellDataFeatures<Data, Gender> param) {
-                        Data person = param.getValue();
-                        // F,M
-                        String genderCode = person.getId();
-                        Gender gender = Gender.getByCode(genderCode);
-                        return new SimpleObjectProperty<Gender>(gender);
+                ObservableList<Help> list = FXCollections.observableArrayList();
+                for(Help k : helpData1){
+                    list.add(k);
+                }
+
+                col.setCellFactory(ComboBoxTableCell.forTableColumn(list));
+
+                col.setOnEditCommit((EventHandler<TableColumn.CellEditEvent<Data, Help>>) t -> {
+                        TablePosition<Data, Help> pos = t.getTablePosition();
+
+                        Help newData = t.getNewValue();
+
+                        int row = pos.getRow();
+                        Data person = t.getTableView().getItems().get(row);
+
+                        System.out.println(newData.name);
+
+                        person.addCustomData("goods_type",newData.name);
+                        person.addCustomData("id_type",newData.id);
+                        System.out.println(":!!--->>> "+person.getAllData());
+
+                        String columnName = "id_type";
+
+
+                        dBWorker.SQLRequest("UPDATE " + currentTable + " set " + columnName + "='" + newData.id + "' where id = " + person.getId() + ";");
+                        currentUpdate();
+
                     }
-                });
+                );
 
-                col.setCellFactory(ComboBoxTableCell.forTableColumn(genderList));
+            }
 
-                col.setOnEditCommit(cellEditEvent ->  {
+            if(o.contains("producer")&&currentTable.equals("goods")){
 
-                });
+                col = new TableColumn(nameOfRussian);
+                col.setCellValueFactory(new PropertyValueFactory<Data, String>(o));
+                col.setCellFactory(TextFieldTableCell.forTableColumn());
+                col.setId(o);
+
+                ObservableList<Help> list = FXCollections.observableArrayList();
+                for(Help k : helpData2){
+                    list.add(k);
+                }
+
+                col.setCellFactory(ComboBoxTableCell.forTableColumn(list));
+
+                col.setOnEditCommit((EventHandler<TableColumn.CellEditEvent<Data, Help>>) t -> {
+                            TablePosition<Data, Help> pos = t.getTablePosition();
+
+                            Help newData = t.getNewValue();
+
+                            int row = pos.getRow();
+                            Data person = t.getTableView().getItems().get(row);
+
+                            System.out.println(newData.name);
+
+                            person.addCustomData("producer",newData.name);
+                            person.addCustomData("id_producer",newData.id);
+                            System.out.println(":!!--->>> "+person.getAllData());
+
+                            String columnName = "id_producer";
 
 
+                            dBWorker.SQLRequest("UPDATE " + currentTable + " set " + columnName + "='" + newData.id + "' where id = " + person.getId() + ";");
+                            currentUpdate();
 
-
+                        }
+                );
 
             }
 
@@ -225,41 +317,68 @@ public class Controller {
             }
             col2.setId(o);
 
-            //обработчик изменения данных в ячейке
-            col.setOnEditCommit((EventHandler<TableColumn.CellEditEvent<Data, String>>) t -> {
+            //обработчик изменения данных в ячейке(не панель добавнеия)
+            if(!o.contains("goods_type")&&!o.contains("producer")) {
+                col.setOnEditCommit((EventHandler<TableColumn.CellEditEvent<Data, String>>) t -> {
 
-                String id = ((Data) t.getTableView().getItems().get(t.getTablePosition().getRow())).getId();
-                System.out.println("id = "+id);
+                            String id = ((Data) t.getTableView().getItems().get(t.getTablePosition().getRow())).getId();
+                            System.out.println("id = " + id);
 
-                int row = t.getTablePosition().getRow();
-                int column = t.getTablePosition().getColumn();
-                System.out.println("изменяем");
-                System.out.println(row +" "+column);
+                            int row = t.getTablePosition().getRow();
+                            int column = t.getTablePosition().getColumn();
+                            System.out.println("изменяем");
+                            System.out.println(row + " " + column);
 
-                String columnName = t.getTableColumn().getId();
-                System.out.println(columnName);
+                            String columnName = t.getTableColumn().getId();
+                            System.out.println(columnName);
 
-                dBWorker.SQLRequest("UPDATE "+currentTable+" set "+columnName+"='"+t.getNewValue()+"' where id = "+id+";");
+                            dBWorker.SQLRequest("UPDATE " + currentTable + " set " + columnName + "='" + t.getNewValue() + "' where id = " + id + ";");
 
-                currentUpdate();
+                            currentUpdate();
+                        }
+                );
             }
-            );
 
 
-            col2.setOnEditCommit((EventHandler<TableColumn.CellEditEvent<Data, String>>) t -> {
-                System.out.println("добавить запись");
-                System.out.println("->>> " + t.getTableColumn().getId());
-                ((Data) t.getTableView().getItems().get(t.getTablePosition().getRow())).addCustomData(t.getTableColumn().getId(),t.getNewValue());
+            //панель добавления
+            if(!currentTable.equals("goods")) {
+                col2.setOnEditCommit((EventHandler<TableColumn.CellEditEvent<Data, String>>) t -> {
+                            System.out.println("добавить запись");
+                            System.out.println("->>> " + t.getTableColumn().getId());
+                            ((Data) t.getTableView().getItems().get(t.getTablePosition().getRow())).addCustomData(t.getTableColumn().getId(), t.getNewValue());
 
-                if(!t.equals("id")){
-                    System.out.println("нужно добавить id");
-                    int id = dBWorker.getMaxId();
-                    ((Data) t.getTableView().getItems().get(t.getTablePosition().getRow())).setId(id+"");
-                }
+                            if (!t.equals("id")) {
+                                System.out.println("нужно добавить id");
+                                int id = dBWorker.getMaxId();
+                                ((Data) t.getTableView().getItems().get(t.getTablePosition().getRow())).setId(id + "");
+                            }
 
 
-                }
-            );
+                        }
+                );
+            }else {
+                System.out.println("таблица ггудс всё сложно =)");
+                col.setOnEditCommit((EventHandler<TableColumn.CellEditEvent<Data, Help>>) t -> {
+                            /*TablePosition<Data, Help> pos = t.getTablePosition();
+
+                            Help newData = t.getNewValue();
+
+                            int row = pos.getRow();
+                            Data person = t.getTableView().getItems().get(row);
+
+                            System.out.println(newData.name);
+
+                            person.addCustomData("goods_type",newData.name);
+                            person.addCustomData("id_type",newData.id);
+                            System.out.println(":!!--->>> "+person.getAllData());
+
+                            String columnName = "id_type";
+
+                            currentUpdate();*/
+
+                        }
+                );
+            }
 
 
             table.getColumns().addAll(col);
@@ -388,44 +507,45 @@ public class Controller {
         return cellFactory;
     }
 
+    
 
 }
 
-enum Gender {
 
-    FEMALE("F", "Famale"), MALE("M", "Male");
 
-    private String code;
-    private String text;
+class Help{
+    public String id;
+    public String name;
 
-    private Gender(String code, String text) {
-        this.code = code;
-        this.text = text;
+    public Help(String id,String name){
+        this.id = id;
+        this.name = name;
     }
 
-    public String getCode() {
-        return code;
+    public String getId() {
+        return id;
     }
 
-    public String getText() {
-        return text;
+    public void setId(String id) {
+        this.id = id;
     }
 
-    public static Gender getByCode(String genderCode) {
-        for (Gender g : Gender.values()) {
-            if (g.code.equals(genderCode)) {
-                return g;
-            }
-        }
-        return null;
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     @Override
     public String toString() {
-        return this.text;
+        return name;
     }
-
 }
+
+
+
 
 
 

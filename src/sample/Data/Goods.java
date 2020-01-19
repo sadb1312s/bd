@@ -64,11 +64,12 @@ public class Goods extends Data {
 
     @Override
     public String getAllData() {
-        return "";
+        return "'"+id+"','"+id_type+"','"+name+"','"+price+"','"+description+"','"+id_producer+"','"+balance+"','"+goods_type+"','"+producer+"'";
     }
     @Override
     public void addCustomData(String columnType, String data) {
-        System.out.println("type = "+columnType);
+        System.out.println("type = "+columnType+" data= "+data);
+        System.out.println("!!! "+getAllData());
 
         switch (columnType){
             case "id": {
