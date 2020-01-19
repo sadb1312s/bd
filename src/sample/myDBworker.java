@@ -12,10 +12,10 @@ public class myDBworker {
     private String userName = "root";
     private String password = "123456";
 
-    boolean isConnected = false;
-    Connection connection;
-    Statement stmt;
-    ResultSet rs;
+    public boolean isConnected = false;
+    public Connection connection;
+    public Statement stmt;
+    public ResultSet rs;
 
     public void connect() throws SQLException{
         connection = DriverManager.getConnection(dbServerUrl,userName,password);
@@ -83,6 +83,17 @@ public class myDBworker {
             return "выполнено с ошибкой: "+e.toString();
         }
         return "выполнено успешно";
+    }
+    public ResultSet SQLRequestSelect(String request){
+        System.out.println("Запрос : "+request);
+        try {
+            rs = stmt.executeQuery(request);
+            return rs;
+        } catch (SQLException e) {
+            System.out.println("ошибка = "+e.toString());
+            e.printStackTrace();
+            return null;
+        }
     }
 
     public int getMaxId(){

@@ -1,11 +1,16 @@
 package sample;
 
+import com.sun.javafx.tk.TKScenePaintListener;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.ComboBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -13,11 +18,14 @@ import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.text.Text;
+import javafx.stage.Stage;
 import javafx.util.Callback;
 import sample.Data.*;
 
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
 
 
 public class Controller {
@@ -48,9 +56,16 @@ public class Controller {
     private Button suppliersButton;
     @FXML
     private TextArea Log;
+    @FXML
+    private Button newOrder;
+    @FXML
+    private AnchorPane mainPane;
+    @FXML
+    private Pane allGoods;
 
     @FXML
     private Pane tablePane;
+
 
 
     static final String goodsTypeReuest = "select * from goodstype;";
@@ -72,6 +87,7 @@ public class Controller {
     myDBworker dBWorker;
 
     public void initialize() {
+        newOrder.setDisable(true);
         dBWorker = new myDBworker();
 
         connectButton.setOnAction(actionEvent -> {
@@ -84,6 +100,7 @@ public class Controller {
                     System.out.println("подключились");
                     dBWorker.isConnected = true;
                     buttonActivate(false);
+                    newOrder.setDisable(false);
 
                 }else {
                     System.out.println("пытаемся отключиться");
@@ -93,6 +110,7 @@ public class Controller {
                     System.out.println("отключились");
                     dBWorker.isConnected = false;
                     buttonActivate(true);
+                    newOrder.setDisable(true);
                 }
 
             } catch (SQLException e) {
@@ -127,6 +145,39 @@ public class Controller {
             currentTable = "buyer";
             Data.request = buyerRequest;
             tableRequest();
+        });
+
+        newOrder.setOnAction(actionEvent -> {
+                try {
+                    FXMLLoader fxmlLoader = new FXMLLoader();
+                    fxmlLoader.setLocation(getClass().getResource("addOrderForm.fxml"));
+                    Parent pane = fxmlLoader.load();
+
+                    addOrderFormController addController = fxmlLoader.getController();
+                    addController.primaryMainPain = mainPane;
+                    addController.dbWorker = dBWorker;
+
+
+                    //current controller
+
+
+                    FXMLLoader loader2 = new FXMLLoader(getClass().getResource("sample.fxml"));
+                    Parent root = loader2.load();
+                    Controller currentContoller = loader2.getController();
+
+
+                    addController.mainController = currentContoller;
+
+                    Stage s = new Stage();
+                    s.setScene(new Scene(pane));
+                    s.show();
+
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+
         });
 
     }
@@ -218,18 +269,45 @@ public class Controller {
 
 
         for(String o : data.columnsName){
+            if(o.equals("finalPrice"))
+                continue;
+            //данные в таблицу
+            //----------------
             TableColumn col = null;
             String nameOfRussian = dataWorker.perevod(o);
-            if(!o.contains("goods_type")||!currentTable.equals("goods")) {
-                //for data
+            //простые столбцы
+            //for data
 
+            if(!currentTable.equals("goods")||(!o.equals("goods_type")&&!o.equals("producer"))){
                 col = new TableColumn(nameOfRussian);
                 col.setCellValueFactory(new PropertyValueFactory<Data, String>(o));
-                col.setCellFactory(TextFieldTableCell.forTableColumn());
                 col.setId(o);
+
+                //обработчик изменения данных в ячейке для простых данны
+                if(!o.contains("id_")) {
+                    col.setCellFactory(TextFieldTableCell.forTableColumn());
+                    col.setOnEditCommit((EventHandler<TableColumn.CellEditEvent<Data, String>>) t -> {
+                                String id = ((Data) t.getTableView().getItems().get(t.getTablePosition().getRow())).getId();
+                                System.out.println("id = " + id);
+
+                                int row = t.getTablePosition().getRow();
+                                int column = t.getTablePosition().getColumn();
+                                System.out.println("изменяем");
+                                System.out.println(row + " " + column);
+
+                                String columnName = t.getTableColumn().getId();
+                                System.out.println(columnName);
+
+                                dBWorker.SQLRequest("UPDATE " + currentTable + " set " + columnName + "='" + t.getNewValue() + "' where id = " + id + ";");
+
+                                currentUpdate();
+                        }
+                    );
+                }
             }
-            //сложные запросы
-            if(o.contains("goods_type")&&currentTable.equals("goods")){
+
+            //сложный столбцы
+            if(o.equals("goods_type")&&currentTable.equals("goods")){
 
                 col = new TableColumn(nameOfRussian);
                 col.setCellValueFactory(new PropertyValueFactory<Data, String>(o));
@@ -268,7 +346,7 @@ public class Controller {
 
             }
 
-            if(o.contains("producer")&&currentTable.equals("goods")){
+            if(o.equals("producer")&&currentTable.equals("goods")){
 
                 col = new TableColumn(nameOfRussian);
                 col.setCellValueFactory(new PropertyValueFactory<Data, String>(o));
@@ -307,59 +385,64 @@ public class Controller {
 
             }
 
-            //for add panel
+            //панель добавления
+            //------------
             TableColumn col2 = null;
 
             col2 = new TableColumn(nameOfRussian);
             col2.setCellValueFactory(new PropertyValueFactory<Data, String>(o));
-            if(!o.equals("id")) {
-                col2.setCellFactory(TextFieldTableCell.forTableColumn());
-            }
-            col2.setId(o);
-
-            //обработчик изменения данных в ячейке(не панель добавнеия)
-            if(!o.contains("goods_type")&&!o.contains("producer")) {
-                col.setOnEditCommit((EventHandler<TableColumn.CellEditEvent<Data, String>>) t -> {
-
-                            String id = ((Data) t.getTableView().getItems().get(t.getTablePosition().getRow())).getId();
-                            System.out.println("id = " + id);
-
-                            int row = t.getTablePosition().getRow();
-                            int column = t.getTablePosition().getColumn();
-                            System.out.println("изменяем");
-                            System.out.println(row + " " + column);
-
-                            String columnName = t.getTableColumn().getId();
-                            System.out.println(columnName);
-
-                            dBWorker.SQLRequest("UPDATE " + currentTable + " set " + columnName + "='" + t.getNewValue() + "' where id = " + id + ";");
-
-                            currentUpdate();
-                        }
-                );
-            }
+            //простые столбцы
+            if(!currentTable.equals("goods")||(!o.equals("goods_type")&&!o.equals("producer"))) {
 
 
-            //панель добавления
-            if(!currentTable.equals("goods")) {
+                if (!o.contains("id")) {
+                    col2.setCellFactory(TextFieldTableCell.forTableColumn());
+                }
+                col2.setId(o);
+
+                //панель добавления
+
                 col2.setOnEditCommit((EventHandler<TableColumn.CellEditEvent<Data, String>>) t -> {
-                            System.out.println("добавить запись");
-                            System.out.println("->>> " + t.getTableColumn().getId());
-                            ((Data) t.getTableView().getItems().get(t.getTablePosition().getRow())).addCustomData(t.getTableColumn().getId(), t.getNewValue());
-
-                            if (!t.equals("id")) {
-                                System.out.println("нужно добавить id");
-                                int id = dBWorker.getMaxId();
-                                ((Data) t.getTableView().getItems().get(t.getTablePosition().getRow())).setId(id + "");
-                            }
+                    System.out.println("добавить запись "+t.getNewValue());
+                    String column = t.getTableColumn().getId();
+                    System.out.println("->>> column =  " + column);
+                    int rowNun = 0;
 
 
-                        }
-                );
-            }else {
-                System.out.println("таблица ггудс всё сложно =)");
-                col.setOnEditCommit((EventHandler<TableColumn.CellEditEvent<Data, Help>>) t -> {
-                            /*TablePosition<Data, Help> pos = t.getTablePosition();
+                    System.out.println("строка = "+rowNun);
+                    Data d = t.getTableView().getItems().get(rowNun);
+                    d.addCustomData(column,t.getNewValue());
+
+                    if (!column.contains("id_")) {
+                        System.out.println("нужно добавить id");
+                        int id = dBWorker.getMaxId();
+                        ((Data) t.getTableView().getItems().get(t.getTablePosition().getRow())).setId(id + "");
+                    }
+
+                    System.out.println(d.getAllData());
+
+
+                });
+            }
+
+            //сложные столбцы
+            if(o.equals("goods_type")&&currentTable.equals("goods")){
+
+                System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+                col2 = new TableColumn(nameOfRussian);
+                col2.setCellValueFactory(new PropertyValueFactory<Goods, String>(o));
+                col2.setCellFactory(TextFieldTableCell.forTableColumn());
+                col2.setId(o);
+
+                ObservableList<Help> list = FXCollections.observableArrayList();
+                for(Help k : helpData1){
+                    list.add(k);
+                }
+
+                col2.setCellFactory(ComboBoxTableCell.forTableColumn(list));
+
+                col2.setOnEditCommit((EventHandler<TableColumn.CellEditEvent<Data, Help>>) t -> {
+                            TablePosition<Data, Help> pos = t.getTablePosition();
 
                             Help newData = t.getNewValue();
 
@@ -374,12 +457,53 @@ public class Controller {
 
                             String columnName = "id_type";
 
-                            currentUpdate();*/
 
                         }
                 );
+
             }
 
+            if(o.equals("producer")&&currentTable.equals("goods")){
+
+                col2 = new TableColumn(nameOfRussian);
+                col2.setCellValueFactory(new PropertyValueFactory<Data, String>(o));
+                col2.setCellFactory(TextFieldTableCell.forTableColumn());
+                col2.setId(o);
+
+                ObservableList<Help> list = FXCollections.observableArrayList();
+                for(Help k : helpData2){
+                    list.add(k);
+                }
+
+                col2.setCellFactory(ComboBoxTableCell.forTableColumn(list));
+
+                col2.setOnEditCommit((EventHandler<TableColumn.CellEditEvent<Data, Help>>) t -> {
+                            TablePosition<Data, Help> pos = t.getTablePosition();
+
+                            Help newData = t.getNewValue();
+
+                            int row = pos.getRow();
+                            Data person = t.getTableView().getItems().get(row);
+
+                            System.out.println(newData.name);
+
+                            person.addCustomData("producer",newData.name);
+                            person.addCustomData("id_producer",newData.id);
+                            System.out.println(":!!--->>> "+person.getAllData());
+
+                            String columnName = "id_producer";
+
+
+                        }
+                );
+
+            }
+
+
+            if(nameOfRussian.contains("id")){
+                col.setVisible(false);
+                col2.setVisible(false);
+            }
 
             table.getColumns().addAll(col);
             tableAdd.getColumns().addAll(col2);
@@ -415,15 +539,12 @@ public class Controller {
         }else {
             Log.setText("выполнено успешно");
         }
-
-
         Log.setVisible(true);
         anchorPane.getChildren().addAll(table,tableAdd);
         tablePane.getChildren().addAll(anchorPane,Log);
 
 
     }
-
 
     public Data getNeedObject(){
         switch (currentTable){
@@ -441,7 +562,6 @@ public class Controller {
         return null;
 
     }
-
 
     //засунуть кнопку в ячейку таблицы, не пытаться понять как это работает
     public Callback<TableColumn<Data, String>, TableCell<Data, String>> getButtonCell(String name){//
@@ -507,7 +627,7 @@ public class Controller {
         return cellFactory;
     }
 
-    
+
 
 }
 

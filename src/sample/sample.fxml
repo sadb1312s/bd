@@ -18,7 +18,7 @@
       <RowConstraints />
    </rowConstraints>
    <children>
-      <AnchorPane prefHeight="498.0" prefWidth="800.0">
+      <AnchorPane fx:id="mainPane" prefHeight="498.0" prefWidth="800.0">
          <children>
             <Pane layoutY="70.0" prefHeight="450.0" prefWidth="200.0" style="-fx-background-color: #b1d0f9;">
                <children>
@@ -43,6 +43,7 @@
             <Pane prefHeight="74.0" prefWidth="800.0" style="-fx-background-color: #a1c5f5;">
                <children>
                   <Button fx:id="connectButton" layoutX="37.0" layoutY="25.0" mnemonicParsing="false" style="-fx-background-color: #d9d9d9;" text="подключиться с бд" />
+                  <Button fx:id="newOrder" layoutX="205.0" layoutY="25.0" mnemonicParsing="false" text="Новый заказ" />
                </children>
             </Pane>
             <Pane fx:id="tablePane" layoutX="200.0" layoutY="70.0" prefHeight="450.0" prefWidth="600.0">

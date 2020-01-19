@@ -18,7 +18,7 @@ public class Data {
 
 
     String id;
-    Data(String tableName){
+    public Data(String tableName){
         this.tableName = tableName;
     }
 
@@ -66,6 +66,20 @@ public class Data {
                 return "всегаЗаказов";
             case "orderSum":
                 return "суммаЗаказов";
+
+
+            case "id_buyer" :
+                return "покупатель";
+            case "id_employee" :
+                return "сотрудник";
+            case "dataStart" :
+                return "дата начала";
+            case "dataEnd" :
+                return "дата завершения";
+            case "finalPrice" :
+                return "итог руб.";
+            case "id_delivery" :
+                return "доставка";
 
 
 

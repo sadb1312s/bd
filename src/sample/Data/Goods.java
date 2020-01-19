@@ -64,8 +64,10 @@ public class Goods extends Data {
 
     @Override
     public String getAllData() {
-        return "'"+id+"','"+id_type+"','"+name+"','"+price+"','"+description+"','"+id_producer+"','"+balance+"','"+goods_type+"','"+producer+"'";
+        //return "'"+id+"','"+id_type+"','"+name+"','"+price+"','"+description+"','"+id_producer+"','"+balance+"','"+goods_type+"','"+producer+"'";
+        return "'"+id+"','"+id_type+"','"+name+"','"+price+"','"+description+"','"+id_producer+"','"+balance+"'";
     }
+
     @Override
     public void addCustomData(String columnType, String data) {
         System.out.println("type = "+columnType+" data= "+data);
@@ -79,6 +81,11 @@ public class Goods extends Data {
             }
             case "id_type": {
                 setId_type(data);
+                break;
+            }
+            case "name": {
+                System.out.println("set NAME");
+                setName(data);
                 break;
             }
             case "price": {

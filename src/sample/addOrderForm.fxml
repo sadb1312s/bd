@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
+
+
+<AnchorPane fx:id="MainPane" prefHeight="500.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.addOrderFormController">
+   <children>
+      <Text fx:id="TEXTallGOODS" disable="true" layoutX="523.0" layoutY="176.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Товары в заказе" visible="false">
+         <font>
+            <Font size="15.0" />
+         </font>
+      </Text>
+      <Text layoutX="280.0" layoutY="36.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Форма добавления заказа">
+         <font>
+            <Font size="20.0" />
+         </font>
+      </Text>
+      <Button fx:id="newOrderB" layoutX="363.0" layoutY="41.0" mnemonicParsing="false" text="Новый заказ" />
+      <Button fx:id="writeOrder" layoutX="360.0" layoutY="135.0" mnemonicParsing="false" text="Создать заказ" />
+      <Text layoutX="331.0" layoutY="231.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Добавить товары в заказ" visible="false" />
+      <TextField fx:id="finalPrice" disable="true" layoutX="72.0" layoutY="427.0" visible="false" />
+      <Text fx:id="Text" layoutX="73.0" layoutY="414.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Итоговая сумма" visible="false">
+         <font>
+            <Font size="20.0" />
+         </font>
+      </Text>
+      <Button fx:id="addToOrder" layoutX="93.0" layoutY="250.0" mnemonicParsing="false" text="Добавить в заказ" visible="false" />
+      <AnchorPane fx:id="allGoods" layoutX="369.0" layoutY="184.0" prefHeight="310.0" prefWidth="420.0" style="-fx-background-color: grey;" visible="false" />
+      <Button fx:id="saveOrder" layoutX="93.0" layoutY="461.0" mnemonicParsing="false" text="Сохранить заказ" visible="false" />
+   </children>
+</AnchorPane>
