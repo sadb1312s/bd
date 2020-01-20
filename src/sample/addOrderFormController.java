@@ -1,26 +1,19 @@
 package sample;
 
-import com.mysql.cj.protocol.x.XProtocolError;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.ComboBoxTableCell;
-import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.Pane;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.util.Callback;
-import jdk.jshell.spi.SPIResolutionException;
 import sample.Data.*;
+import sample.Data.addOrderForm.Order;
+import sample.Data.addOrderForm.goodsInOrder;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.TimerTask;
 
 
 public class addOrderFormController {
@@ -30,8 +23,8 @@ public class addOrderFormController {
     static final String buyerHelpSQL = "select id,fioBuyer from buyer;";
     static final String goodsHelpSQL = "select id,name,price from goods;";
 
-    public static ArrayList<Help> employeesData1;
-    public static ArrayList<Help> buyerData2;
+    //public static ArrayList<Help> employeesData1;
+    //public static ArrayList<Help> buyerData2;
     //public static ArrayList<goodsInOrderHelp> anyHelpData;
 
     public AnchorPane primaryMainPain;
@@ -65,7 +58,7 @@ public class addOrderFormController {
     private Button saveOrder;
 
 
-   /* Order currentOrder;
+    Order currentOrder;
     TableView tableView;
     goodsInOrder currentGood;
     TableView addGoodView;
@@ -79,16 +72,15 @@ public class addOrderFormController {
         });
         writeOrder.setOnAction(actionEvent -> {
             System.out.println("записываем заказ");
-            System.out.println(currentOrder.getAllData());
             String result = dbWorker.SQLRequest("insert into orders values("+currentOrder.getAllData()+");");
-
+            System.out.println(currentOrder);
             if(result.equals("выполнено успешно")){
                 writeOrder.setStyle("-fx-background-color: #00ff00");
             }else {
                 writeOrder.setStyle("-fx-background-color: #d9d9d9");
             }
 
-            newGoodsPane();
+            //newGoodsPane();
 
 
         });
@@ -160,175 +152,28 @@ public class addOrderFormController {
     }
 
 
-    public void setHelpData(RawData data[]){
-        employeesData1 = new ArrayList<>();
-        buyerData2 = new ArrayList<>();
-        System.out.println("формируем вспомогательные данные");
-
-        for(int i = 0; i < data[0].rows.size(); i++){
-            String id = data[0].getRow(i).get(0);
-            String name = data[0].getRow(i).get(1);
-            System.out.println(id+" "+name);
-            employeesData1.add(new Help(id,name));
-        }
-
-            System.out.println();
-            for (int i = 0; i < data[1].rows.size(); i++) {
-                String id = data[1].getRow(i).get(0);
-                String name = data[1].getRow(i).get(1);
-                System.out.println(id + " " + name);
-                buyerData2.add(new Help(id, name));
-            }
-
-    }
-
-    //for goods
-    public void setHelpData(RawData data){
-        anyHelpData = new ArrayList<>();
-        System.out.println("формируем вспомогательные данные");
-
-        for(int i = 0; i < data.rows.size(); i++){
-            String id = data.getRow(i).get(0);
-            String name = data.getRow(i).get(1);
-            String price = data.getRow(i).get(2);
-            System.out.println(id+" "+name+" "+price);
-            goodsInOrderHelp g = new goodsInOrderHelp();
-            g.setId_goods(id);
-            g.setName(name);
-            g.setPrice(price);
-            anyHelpData.add(g);
-        }
 
 
-    }
+
 
     public void newOrderPane(){
-
-
-        System.out.println("Вспомогательгые данные");
-        RawData employeesHelp = dbWorker.sendSQLselectAllRequest(employeesHelpSQL);
-        RawData buyerHelp = dbWorker.sendSQLselectAllRequest(buyerHelpSQL);
-        RawData helpData[] = {employeesHelp,buyerHelp};
-        setHelpData(helpData);
 
 
         System.out.println("формируем таблицу");
         Controller.currentTable = "orders";
         //формируем таблицу
-        TableView<Order> mainTable = new TableView();
-        mainTable.setEditable(true);
+        TableView<Order> mainTable;
+
         Order order = new Order();
+        order.currentOrder = order;
+        currentOrder = order;
+        System.out.println(currentOrder+" "+order);
+        order.dbworker = dbWorker;
+        order.setHelp();
+        mainTable = order.formAddTable(new RawData("",4));
+
+        mainTable.setEditable(true);
         mainTable.setMaxHeight(65);
-
-
-        for(String o : order.fieldName){
-
-            if(o.equals("finalPrice"))
-                continue;
-
-            //просыте столбцы
-            String rusName = order.perevod(o);
-            TableColumn col = new TableColumn(rusName);
-            col.setId(o);
-            //простые столбцы
-            if(!o.contains("id")){
-                col.setCellValueFactory(new PropertyValueFactory<Data, String>(o));
-                col.setCellFactory(TextFieldTableCell.forTableColumn());
-
-                col.setOnEditCommit((EventHandler<TableColumn.CellEditEvent<Order, String>>) t -> {
-                    Order person = t.getTableView().getItems().get(0);
-
-
-                    if(person.id == null) {
-                        int id = dbWorker.getMaxId();
-                        id++;
-                        if (id == 0)
-                            id++;
-
-                        System.out.println("новый id = "+id);
-                        person.setId(id+"");
-                    }
-
-                    System.out.println(person.getAllData());
-                    System.out.println(t.getTableColumn().getId());
-                    person.addCustomData(t.getTableColumn().getId(),t.getNewValue());
-
-                    System.out.println("------>  "+person.getAllData());
-                    currentOrder = person;
-                    }
-                );
-
-                mainTable.getColumns().addAll(col);
-
-            }
-            if(o.equals("id_buyer")){
-                col = new TableColumn(rusName);
-                col.setCellValueFactory(new PropertyValueFactory<Data, String>(o));
-                col.setCellFactory(TextFieldTableCell.forTableColumn());
-
-
-                ObservableList<Help> list = FXCollections.observableArrayList();
-                for(Help k : buyerData2){
-                    list.add(k);
-                }
-
-                col.setCellFactory(ComboBoxTableCell.forTableColumn(list));
-
-                col.setOnEditCommit((EventHandler<TableColumn.CellEditEvent<Data, Help>>) t -> {
-                    TablePosition<Data, Help> pos = t.getTablePosition();
-
-                    Help newData = t.getNewValue();
-
-                    int row = pos.getRow();
-                    Data person = t.getTableView().getItems().get(row);
-
-                    System.out.println(newData.name);
-
-                    person.addCustomData("id_buyer",newData.id);
-                    System.out.println(":!!--->>> "+person.getAllData());
-
-                    System.out.println(person.getAllData());
-                    currentOrder = (Order)person;
-
-                }
-                );
-                mainTable.getColumns().addAll(col);
-            }
-            if(o.equals("id_employee")) {
-                col = new TableColumn(rusName);
-                col.setCellValueFactory(new PropertyValueFactory<Data, String>(o));
-                col.setCellFactory(TextFieldTableCell.forTableColumn());
-
-
-                ObservableList<Help> list = FXCollections.observableArrayList();
-                for(Help k : employeesData1){
-                    list.add(k);
-                }
-
-                col.setCellFactory(ComboBoxTableCell.forTableColumn(list));
-
-                col.setOnEditCommit((EventHandler<TableColumn.CellEditEvent<Data, Help>>) t -> {
-                    TablePosition<Data, Help> pos = t.getTablePosition();
-
-                    Help newData = t.getNewValue();
-
-                    int row = pos.getRow();
-                    Data person = t.getTableView().getItems().get(row);
-                    System.out.println(newData.name);
-                    person.addCustomData("id_employee",newData.id);
-                    System.out.println(":!!--->>> "+person.getAllData());
-                    System.out.println(person.getAllData());
-                    currentOrder = (Order)person;
-
-                }
-                );
-                mainTable.getColumns().addAll(col);
-            }
-
-
-
-
-        }
 
         RawData rawData = new RawData("",7);
         for(int i =0 ; i < 7 ;i++)
@@ -348,7 +193,7 @@ public class addOrderFormController {
         MainPane.getChildren().addAll(mainTable);
     }
 
-    public void newGoodsPane(){
+    /*public void newGoodsPane(){
         TEXTallGOODS.setVisible(true);
         //таблица со всеми товарами
         TableView allGoodsTable = new TableView();
@@ -387,7 +232,6 @@ public class addOrderFormController {
         saveOrder.setVisible(true);
 
         RawData rawData = dbWorker.sendSQLselectAllRequest(goodsHelpSQL);
-        setHelpData(rawData);
 
 
         TableView goodsTable = new TableView();
@@ -402,9 +246,9 @@ public class addOrderFormController {
         col1.setCellValueFactory(new PropertyValueFactory<goodsInOrder, String>("name"));
 
         ObservableList<goodsInOrderHelp> list = FXCollections.observableArrayList();
-        for(goodsInOrderHelp k : anyHelpData){
+        *//*for(goodsInOrderHelp k : anyHelpData){
             list.add(k);
-        }
+        }*//*
 
         col1.setCellFactory(ComboBoxTableCell.forTableColumn(list));
 
@@ -491,6 +335,7 @@ public class addOrderFormController {
 
 
 
+
         *//*if(t.getTableColumn().getId().equals("count")){
             person.setCount(newData.getCount());
         }*//*
@@ -510,7 +355,7 @@ public class addOrderFormController {
 
 
 
-    }
+    }*/
 
 
     public int getX(){
@@ -541,10 +386,10 @@ public class addOrderFormController {
                                     btn.setId("");
 
                                     btn.setOnAction(event -> {
-                                        String id = getTableView().getItems().get(getIndex()).getId();
+                                        //String id = getTableView().getItems().get(getIndex()).getId();
                                         goodsInOrder g =  getTableView().getItems().get(getIndex());
                                         System.out.println(g.getAllData());
-                                        System.out.println("удаляем id "+id);
+                                        //System.out.println("удаляем id "+id);
 
                                         int DelSum = Integer.parseInt(g.getPrice())*Integer.parseInt(g.getCount());
                                         g.Accumsum-=DelSum;
@@ -552,7 +397,7 @@ public class addOrderFormController {
                                         finalPrice.setText(String.valueOf(g.Accumsum));
 
 
-                                        String res = dbWorker.SQLRequest("delete from ordered where id_goods = "+id+";");
+                                        //String res = dbWorker.SQLRequest("delete from ordered where id_goods = "+id+";");
 
 
                                         TablePosition<goodsInOrder,String> t = allGoodsInOrder.getFocusModel().getFocusedCell();
@@ -584,7 +429,8 @@ public class addOrderFormController {
                     }
                 };
         return cellFactory;
-    }*/
+    }
+
 
 }
 

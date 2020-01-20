@@ -1,4 +1,4 @@
-package sample.Data;
+package sample.Data.tableForm;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -8,10 +8,12 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.util.converter.IntegerStringConverter;
+import sample.Data.Data;
+import sample.Data.RawData;
 
 import java.util.ArrayList;
 
-public class Employees extends Data{
+public class Employees extends Data {
     public String fio, phone,adress;/*,salary;*/
     public int salary;
 
@@ -105,6 +107,11 @@ public class Employees extends Data{
         e.setSalary(salary);
 
         return e;
+    }
+
+    @Override
+    public String toString() {
+        return id+" "+fio;
     }
 
     //javaFX
@@ -333,6 +340,8 @@ public class Employees extends Data{
 
         return table;
     }
+
+
 
     //setters and getters
 

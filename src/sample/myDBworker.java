@@ -1,9 +1,6 @@
 package sample;
 
-import javafx.scene.layout.Pane;
-import sample.Data.Data;
 import sample.Data.RawData;
-import sample.Data.goodsType;
 
 import java.sql.*;
 

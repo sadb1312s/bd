@@ -1,27 +1,21 @@
-/*
-package sample.Data;
+package sample.Data.addOrderForm;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import sample.Data.Data;
+import sample.Data.RawData;
 
 import java.util.ArrayList;
 
-public class goodsInOrder extends Data{
-    public int idInTable;
-    public static int Accumsum;
+public class goodsInOrderHelp extends Data {
     String id_goods,name,count,price;
 
-    public goodsInOrder(){
-        super("");
+    public goodsInOrderHelp(){
+        super();
 
     }
-    public goodsInOrder(String id_goods,String  name,String count,String price){
-        super("");
-        super.id = Integer.valueOf(id_goods);
-        setId_goods(id_goods);
-        setName(name);
-        setCount(count);;
-        setPrice(price);
+    public goodsInOrderHelp(String id_goods,String  name,String count,String price){
+        super();
 
     }
 
@@ -32,8 +26,8 @@ public class goodsInOrder extends Data{
         for (int i = 0; i < data.size; i++)
             d.add("");
 
-        ObservableList<goodsInOrder> tableData = FXCollections.observableArrayList();
-        tableData.add(new goodsInOrder());
+        ObservableList<goodsInOrderHelp> tableData = FXCollections.observableArrayList();
+        tableData.add(new goodsInOrderHelp());
 
 
         return tableData;
@@ -41,7 +35,7 @@ public class goodsInOrder extends Data{
 
     @Override
     public String getAllData() {
-       return getId_goods()+" "+getName()+" "+getPrice()+" "+getCount();
+        return getId_goods()+" "+getName()+" "+getPrice();
     }
 
     @Override
@@ -81,4 +75,3 @@ public class goodsInOrder extends Data{
         this.price = price;
     }
 }
-*/
