@@ -26,6 +26,9 @@ public class Goods extends Data {
     public int prodFkey;
     public String producer;
     public String type;
+    //for help
+    public int Count = 0;
+    public static int Accumsum = 0;
 
 
 
@@ -163,6 +166,11 @@ public class Goods extends Data {
         g.setProducer(producer);
 
         return g;
+    }
+
+    @Override
+    public String toString() {
+        return id+" "+name;
     }
 
     //JavaFx
@@ -562,5 +570,15 @@ public class Goods extends Data {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    //for helpData
+
+    public int getCount() {
+        return Count;
+    }
+
+    public void setCount(int count) {
+        Count = count;
     }
 }

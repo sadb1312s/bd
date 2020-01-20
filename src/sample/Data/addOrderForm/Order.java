@@ -4,10 +4,13 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TablePosition;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
 import javafx.scene.control.cell.ComboBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.util.converter.IntegerStringConverter;
 import sample.Controller;
 import sample.Data.Data;
 import sample.Data.RawData;
@@ -16,22 +19,26 @@ import sample.Data.tableForm.Employees;
 import sample.Data.tableForm.Goods;
 import sample.Data.tableForm.goodsType;
 
+import java.awt.*;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 
 public class Order extends Data {
 
-    ObservableList<Goods> addedGoods;
-    ObservableList<Goods> goodsHelp;
-    ObservableList<Employees> employeesHelp;
-    ObservableList<Buyer> buyersHelp;
+    public TextField FinalPrice;
+    public ObservableList<Goods> addedGoods;
+    public ObservableList<Goods> goodsHelp;
+    public ObservableList<Employees> employeesHelp;
+    public ObservableList<Buyer> buyersHelp;
 
     public Order currentOrder;
     public ObservableList currentList;
 
     public goodsInOrder ordered;
-    public int id_buyer,id_employee,id_delivery ;
+    public int id_buyer,id_employee,id_delivery;
     public String dataStart,dataEnd,finalPrice, buyerName, empName;
-
+    public Goods currentGood;
 
 
     public Order() {
@@ -58,6 +65,8 @@ public class Order extends Data {
 
         currentList = FXCollections.observableArrayList();
         currentList.addAll(currentOrder);
+
+        id = dbworker.getMaxId();
     }
 
 
@@ -119,8 +128,6 @@ public class Order extends Data {
     }
 
     //JavaFx
-
-
     @Override
     public TableView formAddTable(RawData data) {
 

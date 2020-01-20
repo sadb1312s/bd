@@ -6,30 +6,30 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
-
 <AnchorPane fx:id="MainPane" prefHeight="500.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.addOrderFormController">
    <children>
-      <Text fx:id="TEXTallGOODS" disable="true" layoutX="523.0" layoutY="176.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Товары в заказе" visible="false">
+      <Text fx:id="TEXTallGOODS" disable="true" layoutX="523.0" layoutY="176.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Товары в заказе">
          <font>
             <Font size="15.0" />
          </font>
       </Text>
-      <Text layoutX="280.0" layoutY="36.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Форма добавления заказа">
+      <Text layoutX="280.0" layoutY="22.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Форма добавления заказа">
          <font>
             <Font size="20.0" />
          </font>
       </Text>
-      <Button fx:id="newOrderB" layoutX="363.0" layoutY="41.0" mnemonicParsing="false" text="Новый заказ" />
-      <Button fx:id="writeOrder" layoutX="360.0" layoutY="135.0" mnemonicParsing="false" text="Создать заказ" />
-      <Text layoutX="331.0" layoutY="231.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Добавить товары в заказ" visible="false" />
-      <TextField fx:id="finalPrice" disable="true" layoutX="72.0" layoutY="427.0" visible="false" />
-      <Text fx:id="Text" layoutX="73.0" layoutY="414.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Итоговая сумма" visible="false">
+      <Button fx:id="writeOrder" layoutX="354.0" layoutY="135.0" mnemonicParsing="false" text="Создать заказ" />
+      <TextField fx:id="finalPrice" disable="true" layoutX="107.0" layoutY="396.0" />
+      <Text fx:id="Text" layoutX="108.0" layoutY="378.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Итоговая сумма">
          <font>
             <Font size="20.0" />
          </font>
       </Text>
-      <Button fx:id="addToOrder" layoutX="93.0" layoutY="250.0" mnemonicParsing="false" text="Добавить в заказ" visible="false" />
-      <AnchorPane fx:id="allGoods" layoutX="369.0" layoutY="184.0" prefHeight="310.0" prefWidth="420.0" style="-fx-background-color: grey;" visible="false" />
-      <Button fx:id="saveOrder" layoutX="93.0" layoutY="461.0" mnemonicParsing="false" text="Сохранить заказ" visible="false" />
+      <Button fx:id="addToOrder" layoutX="126.0" layoutY="327.0" mnemonicParsing="false" text="Добавить в заказ" />
+      <AnchorPane fx:id="allGoods" layoutX="369.0" layoutY="184.0" prefHeight="310.0" prefWidth="420.0" style="-fx-background-color: grey;" />
+      <Button fx:id="saveOrder" layoutX="128.0" layoutY="430.0" mnemonicParsing="false" text="Сохранить заказ" />
+      <AnchorPane fx:id="goodSelect" layoutX="14.0" layoutY="250.0" prefHeight="60.0" prefWidth="335.0" style="-fx-background-color: grey;" />
+      <AnchorPane fx:id="userSelect" layoutX="150.0" layoutY="59.0" prefHeight="70.0" prefWidth="500.0" style="-fx-background-color: grey;" />
+      <Button fx:id="newOrderB" layoutX="357.0" layoutY="27.0" mnemonicParsing="false" text="Новый заказ" />
    </children>
 </AnchorPane>
