@@ -1,3 +1,4 @@
+/*
 package sample.Data;
 
 import javafx.collections.FXCollections;
@@ -73,3 +74,4 @@ public class goodsInOrderHelp extends Data{
         this.price = price;
     }
 }
+*/

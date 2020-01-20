@@ -32,7 +32,7 @@ public class addOrderFormController {
 
     public static ArrayList<Help> employeesData1;
     public static ArrayList<Help> buyerData2;
-    public static ArrayList<goodsInOrderHelp> anyHelpData;
+    //public static ArrayList<goodsInOrderHelp> anyHelpData;
 
     public AnchorPane primaryMainPain;
     public int x = 5;
@@ -65,7 +65,7 @@ public class addOrderFormController {
     private Button saveOrder;
 
 
-    Order currentOrder;
+   /* Order currentOrder;
     TableView tableView;
     goodsInOrder currentGood;
     TableView addGoodView;
@@ -491,9 +491,9 @@ public class addOrderFormController {
 
 
 
-        /*if(t.getTableColumn().getId().equals("count")){
+        *//*if(t.getTableColumn().getId().equals("count")){
             person.setCount(newData.getCount());
-        }*/
+        }*//*
 
 
 
@@ -584,7 +584,7 @@ public class addOrderFormController {
                     }
                 };
         return cellFactory;
-    }
+    }*/
 
 }
 

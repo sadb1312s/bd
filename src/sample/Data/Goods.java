@@ -1,41 +1,64 @@
 package sample.Data;
 
+import javafx.beans.Observable;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.EventHandler;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.cell.ComboBoxTableCell;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.util.converter.IntegerStringConverter;
+import sample.Controller;
 
+import javax.naming.ldap.Control;
 import java.util.ArrayList;
 
 public class Goods extends Data {
 
-
-    public String id_type;
     public String name;
-    public String price;
+    public int price;
     public String description;
-    public String id_producer;
-    public String balance;
-    public String goods_type;
+    public int balance;
+
+    public int typeFkey;
+    public int prodFkey;
     public String producer;
+    public String type;
+
+
+
+    ObservableList<goodsType> typeData;
+    ObservableList<Producer> producersData;
 
     public Goods(){
-        super("");
+        super();
+        tableName = "goods";
     }
 
-    public Goods(String tableName, ArrayList<String> data) {
-        super(data.get(0));
-        id = data.get(0);
-        id_type = data.get(1);
-        name = data.get(2);
-        price = data.get(3);
-        description = data.get(4);
-        id_producer = data.get(5);
-        balance = data.get(6);
-        goods_type = data.get(7);
-        producer = data.get(8);
+    public void formHelpData(){
+        System.out.println("ВСПОМОГАТЕЛЬНЫЕ ДАННЫЕ");
+        RawData types = dbworker.sendSQLselectAllRequest(Controller.goodsTypeReuest);
+        RawData producers = dbworker.sendSQLselectAllRequest(Controller.producerRequest);
 
+        typeData = new goodsType().getDataset(types);
+        producersData = new Producer().getDataset(producers);
+    }
 
-        System.out.println("!!!! "+id);
-        System.out.println("!!!! "+super.id);
+    public Goods(ArrayList<String> data) {
+        super();
+
+        setId(Integer.valueOf(data.get(0)));
+        setTypeFkey(Integer.parseInt(data.get(1)));
+        setName(data.get(2));
+        setPrice(Integer.parseInt(data.get(3)));
+        setDescription(data.get(4));
+        setProdFkey(Integer.parseInt(data.get(5)));
+        setBalance(Integer.parseInt(data.get(6)));
+        setProducer(data.get(8));
+        setType(data.get(7));
+        System.out.println(">>>>>> "+data);
     }
 
 
@@ -43,7 +66,7 @@ public class Goods extends Data {
     public ObservableList getDataset(RawData data) {
         ObservableList<Goods> tableData = FXCollections.observableArrayList();
         for(int i = 0; i < data.rows.size(); i++){
-            tableData.add(new Goods(data.tableName, data.getRow(i)));
+            tableData.add(new Goods(data.getRow(i)));
         }
 
         return tableData;
@@ -56,7 +79,7 @@ public class Goods extends Data {
             d.add("");
 
         ObservableList<Goods> tableData = FXCollections.observableArrayList();
-        tableData.add(new Goods(data.tableName, d));
+        tableData.add(new Goods());
 
 
         return tableData;
@@ -65,18 +88,18 @@ public class Goods extends Data {
     @Override
     public String getAllData() {
         //return "'"+id+"','"+id_type+"','"+name+"','"+price+"','"+description+"','"+id_producer+"','"+balance+"','"+goods_type+"','"+producer+"'";
-        return "'"+id+"','"+id_type+"','"+name+"','"+price+"','"+description+"','"+id_producer+"','"+balance+"'";
+        return "'"+id+"','"+typeFkey+"','"+name+"','"+price+"','"+description+"','"+prodFkey+"','"+balance+"'";
     }
 
     @Override
     public void addCustomData(String columnType, String data) {
-        System.out.println("type = "+columnType+" data= "+data);
+        /*System.out.println("type = "+columnType+" data= "+data);
         System.out.println("!!! "+getAllData());
 
         switch (columnType){
             case "id": {
-                setId(data);
-                id = data;
+                //setId(data);
+                //id = data;
                 break;
             }
             case "id_type": {
@@ -112,17 +135,371 @@ public class Goods extends Data {
                 setProducer(data);
                 break;
             }
-        }
+        }*/
     }
 
-    public String getId_type() {
-        return id_type;
+    @Override
+    public void setNull() {
+        super.setNull();
+        name = "";
+        price = 0;
+        description = "";
+        balance = 0;
+        prodFkey = typeFkey = 0;
+        producer = type = "";
     }
 
-    public void setId_type(String id_type) {
-        this.id_type = id_type;
+    @Override
+    public Data clone() throws CloneNotSupportedException {
+        Goods g = new Goods();
+        g.setId(id);
+        g.setName(name);
+        g.setPrice(price);
+        g.setDescription(description);
+        g.setBalance(balance);
+        g.setTypeFkey(typeFkey);
+        g.setProdFkey(prodFkey);
+        g.setType(type);
+        g.setProducer(producer);
+
+        return g;
     }
 
+    //JavaFx
+    @Override
+    public TableView formTable(RawData data) {
+        ObservableList<Goods> tableData = getDataset(data);
+
+        TableView<Goods> table = new TableView<Goods>();
+        table.setEditable(true);
+
+
+        mainTable = table;
+
+
+        //Столбцы
+        //столбец тип
+        TableColumn col2 = new TableColumn("Тип товара");
+        col2.setCellValueFactory(new PropertyValueFactory<Goods, String>("type"));
+        col2.setId("id_type");
+        //обработчик изменения
+        col2.setCellFactory(ComboBoxTableCell.forTableColumn(typeData));
+        col2.setOnEditCommit((EventHandler<TableColumn.CellEditEvent<Goods, goodsType>>) t -> {
+
+                    Goods inCell =  t.getTableView().getItems().get(t.getTablePosition().getRow());
+                    String columnName = t.getTableColumn().getId();
+
+                    System.out.println("изменяем стобец "+columnName+" ,новые данные "+t.getNewValue());
+                    System.out.println("текущие данные");
+                    System.out.println(inCell.getAllData());
+                    inCell.typeFkey = t.getNewValue().getID_Type();
+                    inCell.type = t.getNewValue().getGoods_type();
+                    System.out.println("после изменения");
+                    System.out.println(inCell.getAllData());
+
+                    mainTable.refresh();
+                    String res = dbworker.SQLRequest("UPDATE "+tableName+" set " + columnName + "='" + inCell.getTypeFkey() + "' where id = " + inCell.getId() + ";");
+
+                    log.setText("");
+                    log.setText(res);
+                }
+        );
+
+
+        //столбец имя
+        TableColumn col3 = new TableColumn("название");
+        col3.setCellValueFactory(new PropertyValueFactory<Goods, String>("name"));
+        col3.setId("name");
+        //обработчик изменения
+        col3.setCellFactory(TextFieldTableCell.forTableColumn());
+        col3.setOnEditCommit((EventHandler<TableColumn.CellEditEvent<Goods, String>>) t -> {
+
+                    Goods inCell =  t.getTableView().getItems().get(t.getTablePosition().getRow());
+                    String columnName = t.getTableColumn().getId();
+
+                    System.out.println("изменяем стобец "+columnName+" ,новые данные "+t.getNewValue()+", имя таблицы "+tableName);
+                    System.out.println("текущие данные");
+                    System.out.println(inCell.getAllData());
+                    inCell.name = t.getNewValue();
+                    System.out.println("после изменения");
+                    System.out.println(inCell.getAllData());
+
+                    String res = dbworker.SQLRequest("UPDATE "+tableName+" set " + columnName + "='" + t.getNewValue() + "' where id = " + inCell.getId() + ";");
+
+                    log.setText("");
+                    log.setText(res);
+                }
+        );
+
+        //столбец адресс Цена
+        TableColumn col4 = new TableColumn("цена");
+        col4.setCellValueFactory(new PropertyValueFactory<Goods, Integer>("price"));
+        col4.setId("price");
+        //обработчик изменения
+        col4.setCellFactory(TextFieldTableCell.forTableColumn(new IntegerStringConverter()));
+        col4.setOnEditCommit((EventHandler<TableColumn.CellEditEvent<Goods, Integer>>) t -> {
+
+                    Goods inCell =  t.getTableView().getItems().get(t.getTablePosition().getRow());
+                    String columnName = t.getTableColumn().getId();
+
+                    System.out.println("изменяем стобец "+columnName+" ,новые данные "+t.getNewValue()+" table "+tableName);
+                    System.out.println("текущие данные");
+                    System.out.println(inCell.getAllData());
+                    inCell.price = Integer.parseInt(String.valueOf(t.getNewValue()));
+                    System.out.println("после изменения");
+                    System.out.println(inCell.getAllData());
+
+                    String res = dbworker.SQLRequest("UPDATE "+tableName+" set " + columnName + "='" + t.getNewValue() + "' where id = " + inCell.getId() + ";");
+
+                    log.setText("");
+                    log.setText(res);
+                }
+        );
+
+        //столбец описание
+        TableColumn col5 = new TableColumn("описание");
+        col5.setCellValueFactory(new PropertyValueFactory<Goods, Integer>("description"));
+        col5.setId("description");
+        //обработчик изменения
+        col5.setCellFactory(TextFieldTableCell.forTableColumn());
+        col5.setOnEditCommit((EventHandler<TableColumn.CellEditEvent<Goods, Integer>>) t -> {
+
+                    Goods inCell =  t.getTableView().getItems().get(t.getTablePosition().getRow());
+                    String columnName = t.getTableColumn().getId();
+
+                    System.out.println("изменяем стобец "+columnName+" ,новые данные "+t.getNewValue());
+                    System.out.println("текущие данные");
+                    System.out.println(inCell.getAllData());
+                    inCell.description = String.valueOf(t.getNewValue());
+                    System.out.println("после изменения");
+                    System.out.println(inCell.getAllData());
+
+                    String res = dbworker.SQLRequest("UPDATE "+tableName+" set " + columnName + "='" + t.getNewValue() + "' where id = " + inCell.getId() + ";");
+
+                    log.setText("");
+                    log.setText(res);
+                }
+        );
+
+        //Столбец остаток
+        TableColumn col6 = new TableColumn("остаток");
+        col6.setCellValueFactory(new PropertyValueFactory<Goods, String>("balance"));
+        col6.setId("balance");
+        //обработчик изменения
+        col6.setCellFactory(TextFieldTableCell.forTableColumn(new IntegerStringConverter()));
+        col6.setOnEditCommit((EventHandler<TableColumn.CellEditEvent<Goods, Integer>>) t -> {
+
+                    Goods inCell =  t.getTableView().getItems().get(t.getTablePosition().getRow());
+                    String columnName = t.getTableColumn().getId();
+
+                    System.out.println("изменяем стобец "+columnName+" ,новые данные "+t.getNewValue());
+                    System.out.println("текущие данные");
+                    System.out.println(inCell.getAllData());
+                    inCell.balance = t.getNewValue();
+                    System.out.println("после изменения");
+                    System.out.println(inCell.getAllData());
+
+                    String res = dbworker.SQLRequest("UPDATE "+tableName+" set " + columnName + "='" + t.getNewValue() + "' where id = " + inCell.getId() + ";");
+
+                    log.setText("");
+                    log.setText(res);
+                }
+        );
+
+        //Столбец производитель
+        TableColumn col7 = new TableColumn("производитель");
+        col7.setCellValueFactory(new PropertyValueFactory<Goods, String>("producer"));
+        col7.setId("id_producer");
+        //обработчик изменения
+        col7.setCellFactory(ComboBoxTableCell.forTableColumn(producersData));
+        col7.setOnEditCommit((EventHandler<TableColumn.CellEditEvent<Goods, Producer>>) t -> {
+
+                    Goods inCell =  t.getTableView().getItems().get(t.getTablePosition().getRow());
+                    String columnName = t.getTableColumn().getId();
+
+                    System.out.println("изменяем стобец "+columnName+" ,новые данные "+t.getNewValue());
+                    System.out.println("текущие данные");
+                    System.out.println(inCell.getAllData());
+                    inCell.prodFkey = t.getNewValue().getId();
+                    inCell.producer = t.getNewValue().getProducer();
+                    System.out.println("после изменения");
+                    System.out.println(inCell.getAllData());
+
+
+                    mainTable.refresh();
+                    String res = dbworker.SQLRequest("UPDATE "+tableName+" set " + columnName + "='" + t.getNewValue().getId() + "' where id = " + inCell.getId() + ";");
+
+                    log.setText("");
+                    log.setText(res);
+                }
+        );
+
+        //столбец с кнопкой
+        TableColumn buttonCol = new TableColumn();
+        buttonCol.setCellFactory(getButtonCell("удалить"));
+
+        table.getColumns().addAll(col2,col3,col4,col5,col6,col7,buttonCol);
+        table.setItems(tableData);
+
+        return table;
+    }
+
+    @Override
+    public TableView formAddTable(RawData data) {
+        ObservableList<Goods> tableData = getNullDataset(data);
+
+        TableView<Goods> table = new TableView<Goods>();
+        table.setEditable(true);
+
+
+        addTable = table;
+
+        //Столбцы
+        //столбец тип
+        TableColumn col2 = new TableColumn("Тип товара");
+        col2.setCellValueFactory(new PropertyValueFactory<Goods, String>("type"));
+        col2.setId("id_type");
+        //обработчик изменения
+        col2.setCellFactory(ComboBoxTableCell.forTableColumn(typeData));
+        col2.setOnEditCommit((EventHandler<TableColumn.CellEditEvent<Goods, goodsType>>) t -> {
+
+                    Goods inCell =  t.getTableView().getItems().get(t.getTablePosition().getRow());
+                    String columnName = t.getTableColumn().getId();
+
+                    System.out.println("изменяем стобец "+columnName+" ,новые данные "+t.getNewValue());
+                    System.out.println("текущие данные");
+                    System.out.println(inCell.getAllData());
+                    inCell.typeFkey = t.getNewValue().getID_Type();
+                    inCell.type = t.getNewValue().getGoods_type();
+                    System.out.println("после изменения");
+                    System.out.println(inCell.getAllData());
+
+                    addTable.refresh();
+
+                }
+        );
+
+
+        //столбец имя
+        TableColumn col3 = new TableColumn("название");
+        col3.setCellValueFactory(new PropertyValueFactory<Goods, String>("name"));
+        col3.setId("name");
+        //обработчик изменения
+        col3.setCellFactory(TextFieldTableCell.forTableColumn());
+        col3.setOnEditCommit((EventHandler<TableColumn.CellEditEvent<Goods, String>>) t -> {
+
+                    Goods inCell =  t.getTableView().getItems().get(t.getTablePosition().getRow());
+                    String columnName = t.getTableColumn().getId();
+
+                    System.out.println("изменяем стобец "+columnName+" ,новые данные "+t.getNewValue()+", имя таблицы "+tableName);
+                    System.out.println("текущие данные");
+                    System.out.println(inCell.getAllData());
+                    inCell.name = t.getNewValue();
+                    System.out.println("после изменения");
+                    System.out.println(inCell.getAllData());
+
+                }
+        );
+
+        //столбец адресс Цена
+        TableColumn col4 = new TableColumn("цена");
+        col4.setCellValueFactory(new PropertyValueFactory<Goods, Integer>("price"));
+        col4.setId("price");
+        //обработчик изменения
+        col4.setCellFactory(TextFieldTableCell.forTableColumn(new IntegerStringConverter()));
+        col4.setOnEditCommit((EventHandler<TableColumn.CellEditEvent<Goods, Integer>>) t -> {
+
+                    Goods inCell =  t.getTableView().getItems().get(t.getTablePosition().getRow());
+                    String columnName = t.getTableColumn().getId();
+
+                    System.out.println("изменяем стобец "+columnName+" ,новые данные "+t.getNewValue()+" table "+tableName);
+                    System.out.println("текущие данные");
+                    System.out.println(inCell.getAllData());
+                    inCell.price = Integer.parseInt(String.valueOf(t.getNewValue()));
+                    System.out.println("после изменения");
+                    System.out.println(inCell.getAllData());
+
+                }
+        );
+
+        //столбец описание
+        TableColumn col5 = new TableColumn("описание");
+        col5.setCellValueFactory(new PropertyValueFactory<Goods, Integer>("description"));
+        col5.setId("description");
+        //обработчик изменения
+        col5.setCellFactory(TextFieldTableCell.forTableColumn());
+        col5.setOnEditCommit((EventHandler<TableColumn.CellEditEvent<Goods, Integer>>) t -> {
+
+                    Goods inCell =  t.getTableView().getItems().get(t.getTablePosition().getRow());
+                    String columnName = t.getTableColumn().getId();
+
+                    System.out.println("изменяем стобец "+columnName+" ,новые данные "+t.getNewValue());
+                    System.out.println("текущие данные");
+                    System.out.println(inCell.getAllData());
+                    inCell.description = String.valueOf(t.getNewValue());
+                    System.out.println("после изменения");
+                    System.out.println(inCell.getAllData());
+
+                }
+        );
+
+        //Столбец остаток
+        TableColumn col6 = new TableColumn("остаток");
+        col6.setCellValueFactory(new PropertyValueFactory<Goods, String>("balance"));
+        col6.setId("balance");
+        //обработчик изменения
+        col6.setCellFactory(TextFieldTableCell.forTableColumn(new IntegerStringConverter()));
+        col6.setOnEditCommit((EventHandler<TableColumn.CellEditEvent<Goods, Integer>>) t -> {
+
+                    Goods inCell =  t.getTableView().getItems().get(t.getTablePosition().getRow());
+                    String columnName = t.getTableColumn().getId();
+
+                    System.out.println("изменяем стобец "+columnName+" ,новые данные "+t.getNewValue());
+                    System.out.println("текущие данные");
+                    System.out.println(inCell.getAllData());
+                    inCell.balance = t.getNewValue();
+                    System.out.println("после изменения");
+                    System.out.println(inCell.getAllData());
+
+                }
+        );
+
+        //Столбец производитель
+        TableColumn col7 = new TableColumn("производитель");
+        col7.setCellValueFactory(new PropertyValueFactory<Goods, String>("producer"));
+        col7.setId("id_producer");
+        //обработчик изменения
+        col7.setCellFactory(ComboBoxTableCell.forTableColumn(producersData));
+        col7.setOnEditCommit((EventHandler<TableColumn.CellEditEvent<Goods, Producer>>) t -> {
+
+                    Goods inCell =  t.getTableView().getItems().get(t.getTablePosition().getRow());
+                    String columnName = t.getTableColumn().getId();
+
+                    System.out.println("изменяем стобец "+columnName+" ,новые данные "+t.getNewValue());
+                    System.out.println("текущие данные");
+                    System.out.println(inCell.getAllData());
+                    inCell.prodFkey = t.getNewValue().getId();
+                    inCell.producer = t.getNewValue().getProducer();
+                    System.out.println("после изменения");
+                    System.out.println(inCell.getAllData());
+
+
+                    addTable.refresh();
+                }
+        );
+
+
+        //столбец с кнопкой
+        TableColumn buttonCol = new TableColumn();
+        buttonCol.setCellFactory(getButtonCell("добавить"));
+
+        table.getColumns().addAll(col2,col3,col4,col5,col6,col7,buttonCol);
+        table.setItems(tableData);
+
+        return table;
+    }
+
+    //getters and setters;
     public String getName() {
         return name;
     }
@@ -131,11 +508,11 @@ public class Goods extends Data {
         this.name = name;
     }
 
-    public String getPrice() {
+    public int getPrice() {
         return price;
     }
 
-    public void setPrice(String price) {
+    public void setPrice(int price) {
         this.price = price;
     }
 
@@ -147,28 +524,28 @@ public class Goods extends Data {
         this.description = description;
     }
 
-    public String getId_producer() {
-        return id_producer;
-    }
-
-    public void setId_producer(String id_producer) {
-        this.id_producer = id_producer;
-    }
-
-    public String getBalance() {
+    public int getBalance() {
         return balance;
     }
 
-    public void setBalance(String balance) {
+    public void setBalance(int balance) {
         this.balance = balance;
     }
 
-    public String getGoods_type() {
-        return goods_type;
+    public int getTypeFkey() {
+        return typeFkey;
     }
 
-    public void setGoods_type(String goods_type) {
-        this.goods_type = goods_type;
+    public void setTypeFkey(int typeFkey) {
+        this.typeFkey = typeFkey;
+    }
+
+    public int getProdFkey() {
+        return prodFkey;
+    }
+
+    public void setProdFkey(int prodFkey) {
+        this.prodFkey = prodFkey;
     }
 
     public String getProducer() {
@@ -177,5 +554,13 @@ public class Goods extends Data {
 
     public void setProducer(String producer) {
         this.producer = producer;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 }

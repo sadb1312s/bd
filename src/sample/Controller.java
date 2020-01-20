@@ -68,8 +68,9 @@ public class Controller {
 
 
 
-    static final String goodsTypeReuest = "select * from goodstype;";
-    static final String producerRequest = "select * from producer;";
+    //SQL Table request
+    public static final String goodsTypeReuest = "select * from goodstype;";
+    public static final String producerRequest = "select * from producer;";
 
     static final String goodsRequest = "select goods.id,id_type,name,price,description,id_producer,balance, goodstype.goods_type, producer.producer from goods join goodstype on goodstype.id = goods.id_type\n" +
             "join producer on producer.id = goods.id_producer;";
@@ -81,6 +82,7 @@ public class Controller {
 
 
 
+    public Data currentTableObject;
     public static String currentTable;
     public static ArrayList<Help> helpData1;
     public static ArrayList<Help> helpData2;
@@ -89,6 +91,7 @@ public class Controller {
     public void initialize() {
         newOrder.setDisable(true);
         dBWorker = new myDBworker();
+
 
         connectButton.setOnAction(actionEvent -> {
             try {
@@ -121,27 +124,47 @@ public class Controller {
         });
 
         typeButtun.setOnAction(actionEvent -> {
+            currentTableObject = new goodsType();
+            currentTableObject.dbworker = dBWorker;
+            currentTableObject.log = Log;
             currentTable = "goodstype";
             Data.request = goodsTypeReuest;
             tableRequest();
 
         });
+
         goodsButton.setOnAction(actionEvent -> {
+            currentTableObject = new Goods();
+            currentTableObject.dbworker = dBWorker;
+            currentTableObject.log = Log;
             currentTable = "goods";
             Data.request = goodsRequest;
+            ((Goods)currentTableObject).formHelpData();
             tableRequest();
         });
+
         producerButton.setOnAction(actionEvent -> {
+            currentTableObject = new Producer();
+            currentTableObject.dbworker = dBWorker;
+            currentTableObject.log = Log;
             currentTable = "producer";
             Data.request = producerRequest;
             tableRequest();
         });
+
         employeesButton.setOnAction(actionEvent -> {
+            currentTableObject = new Employees();
+            currentTableObject.dbworker = dBWorker;
+            currentTableObject.log = Log;
             currentTable = "employees";
             Data.request = employeesRequest;
             tableRequest();
         });
+
         buyerButton.setOnAction(actionEvent -> {
+            currentTableObject = new Buyer();
+            currentTableObject.dbworker = dBWorker;
+            currentTableObject.log = Log;
             currentTable = "buyer";
             Data.request = buyerRequest;
             tableRequest();
@@ -247,6 +270,24 @@ public class Controller {
 
     public void addGrid(RawData data){
         tablePane.getChildren().clear();
+        Log.setVisible(true);
+        Log.setText("");
+        AnchorPane anchorPane = new AnchorPane();
+
+        TableView table = currentTableObject.formTable(data);
+        table.setEditable(true);
+        table.setMaxWidth(600);
+        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        table.setMaxHeight(330);
+
+        TableView addTable = currentTableObject.formAddTable(data);
+        addTable.setEditable(true);
+        addTable.setMaxWidth(600);
+        addTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        addTable.setMaxHeight(60);
+
+
+        /*tablePane.getChildren().clear();
         Log.setText("");
         AnchorPane anchorPane = new AnchorPane();
 
@@ -541,93 +582,13 @@ public class Controller {
         }
         Log.setVisible(true);
         anchorPane.getChildren().addAll(table,tableAdd);
+        tablePane.getChildren().addAll(anchorPane,Log);*/
+
+        AnchorPane.setTopAnchor(table,5.0);
+        AnchorPane.setTopAnchor(addTable,330.0);
+        anchorPane.getChildren().addAll(table,addTable);
         tablePane.getChildren().addAll(anchorPane,Log);
-
-
     }
-
-    public Data getNeedObject(){
-        switch (currentTable){
-            case "goodstype":
-                return new goodsType();
-            case "goods" :
-                return new Goods();
-            case "producer" :
-                return new Producer();
-            case "employees" :
-                return new Employees();
-            case "buyer" :
-                return new Buyer();
-        }
-        return null;
-
-    }
-
-    //засунуть кнопку в ячейку таблицы, не пытаться понять как это работает
-    public Callback<TableColumn<Data, String>, TableCell<Data, String>> getButtonCell(String name){//
-        Callback<TableColumn<Data,String>, TableCell<Data, String>> cellFactory
-                = //
-                new Callback<TableColumn<Data, String>, TableCell<Data, String>>() {
-                    @Override
-                    public TableCell call(final TableColumn<Data, String> param) {
-                        final TableCell<Data, String> cell = new TableCell<Data, String>() {
-
-                            final Button btn = new Button(name);
-                            @Override
-                            public void updateItem(String item, boolean empty) {
-                                super.updateItem(item, empty);
-                                if (empty) {
-                                    setGraphic(null);
-                                    setText(null);
-                                } else {
-
-                                    if(name.equals("удалить")){
-                                        btn.setId("DELETE");
-                                    }
-
-                                    if(name.equals("добавить")){
-                                        btn.setId("INSERT");
-                                    }
-
-                                    btn.setOnAction(event -> {
-                                        System.out.println("нажали кнопку "+btn.getId());
-                                        //System.out.println("->"+getTableView().getItems().get(0).getAllData());
-
-                                        if(btn.getId().equals("INSERT")){
-                                            System.out.println("Вставить !!!");
-
-                                            String dataS = getTableView().getItems().get(0).getAllData();
-                                            System.out.println(""+getTableView().getItems().get(0).getAllData());
-
-                                            System.out.println("добавляем ->> "+dataS);
-
-                                            String res = dBWorker.SQLRequest("insert into "+currentTable+" values("+dataS+");");
-                                            currentUpdate();
-                                            Log.setText(res);
-                                        }
-
-                                        if(btn.getId().equals("DELETE")){
-
-                                            String id = getTableView().getItems().get(getIndex()).getId();
-                                            System.out.println("удаляем id "+id);
-                                            String res = dBWorker.SQLRequest("delete from "+currentTable+" where id = "+id+";");
-                                            currentUpdate();
-                                            Log.setText(res);
-                                        }
-
-                                    });
-                                    setGraphic(btn);
-                                    setText(null);
-                                }
-                            }
-                        };
-                        return cell;
-                    }
-                };
-        return cellFactory;
-    }
-
-
 
 }
 

@@ -1,11 +1,10 @@
+/*
 package sample.Data;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 public class Order extends Data{
     public goodsInOrder ordered;
@@ -94,7 +93,7 @@ public class Order extends Data{
     }
 
     public String getId() {
-        return id;
+        return String.valueOf(Integer.valueOf(id));
     }
 
     public void setId(String id) {
@@ -149,3 +148,4 @@ public class Order extends Data{
         this.id_delivery = id_delivery;
     }
 }
+*/
